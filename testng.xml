@@ -2,8 +2,8 @@
 <suite name="MPS Website Test Suite">
     <test name="Cucumber Tests">
         <classes>
-            <class name="runner.TestRunner"/>
             <class name="TestRailAPI.TestSyncManager"/>
+            <class name="runner.TestRunner"/>
         </classes>
     </test>
 </suite>
