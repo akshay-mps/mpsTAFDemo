@@ -1,7 +1,5 @@
 package base;
 
-import io.cucumber.java.After;
-import io.cucumber.java.Before;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -21,20 +19,12 @@ import java.util.Properties;
 
 public class BaseTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseTest.class);
-    private static final ThreadLocal<WebDriver> driverThreadLocal = new ThreadLocal<>();
     private Properties prop;
 
-    /**
-     * Default constructor
-     */
     public BaseTest() {
-        // Properties and driver initialized in setup
+        // Properties initialized in setup
     }
 
-    /**
-     * Gets the WebDriver instance for the current thread
-     * @return WebDriver instance
-     */
     public WebDriver getDriver() {
         WebDriver driver = DriverManager.getDriver();
         if (driver == null) {
@@ -44,27 +34,17 @@ public class BaseTest {
         return driver;
     }
 
-    @Before
     public WebDriver setup() throws IOException {
         try {
-            // Step 1: Read config.properties
             loadProperties();
-
-            // Step 2 & 3: Read browser capabilities and set up WebDriver
             WebDriver driver = initializeDriver();
             if (driver == null) {
                 throw new IllegalStateException("initializeDriver() returned null");
             }
             DriverManager.setDriver(driver);
-//            driverThreadLocal.set(driver);
-
-            // Step 4: Log driver info and test start
             LOGGER.info("WebDriver selected: {}", driver);
             LOGGER.info("Starting the test");
-
-            // Step 5: Initialize WebElements
             initElements();
-
             return driver;
         } catch (Exception e) {
             LOGGER.error("Failed to set up WebDriver: {}", e.getMessage(), e);
@@ -130,7 +110,6 @@ public class BaseTest {
         }
     }
 
-    @After
     public void tearDown() {
         WebDriver driver = DriverManager.getDriver();
         if (driver != null) {
@@ -139,9 +118,10 @@ public class BaseTest {
                 driver.quit();
             } catch (Exception e) {
                 LOGGER.error("Error while quitting WebDriver: {}", e.getMessage(), e);
+            } finally {
+                DriverManager.removeDriver();
+                LOGGER.info("WebDriver removed and session closed");
             }
-            DriverManager.removeDriver();
-            LOGGER.info("WebDriver removed and session closed for the current scenario");
         } else {
             LOGGER.warn("WebDriver is null, nothing to tear down");
         }
