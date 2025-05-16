@@ -36,7 +36,7 @@ public class BaseTest {
      * @return WebDriver instance
      */
     public WebDriver getDriver() {
-        WebDriver driver = driverThreadLocal.get();
+        WebDriver driver = DriverManager.getDriver();
         if (driver == null) {
             LOGGER.error("WebDriver is null for the current thread");
             throw new IllegalStateException("WebDriver is null for the current thread");
@@ -121,7 +121,7 @@ public class BaseTest {
     }
 
     private void initElements() {
-        WebDriver driver = driverThreadLocal.get();
+        WebDriver driver = DriverManager.getDriver();
         if (driver != null) {
             PageFactory.initElements(driver, this);
             LOGGER.info("Initialized WebElements for PageFactory");

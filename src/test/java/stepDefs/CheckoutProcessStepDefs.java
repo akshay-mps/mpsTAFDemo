@@ -9,6 +9,7 @@ import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.Select;
 import pages.CheckoutProcess;
+import utility.DriverManager;
 import utility.operationalUtils;
 
 import static Resources.ProjectConstants.*;
@@ -19,17 +20,9 @@ import static utility.operationalUtils.assertEquals;
 
 public class CheckoutProcessStepDefs {
 
-    private operationalUtils operationalUtil;
-    private CheckoutProcess checkoutProcess;
-
-    private BaseTest bt = new BaseTest();
-
-    // Constructor for manual dependency injection
-    public CheckoutProcessStepDefs() {
-        WebDriver driver = bt.getDriver();
-        this.operationalUtil = new operationalUtils(driver);
-        this.checkoutProcess = new CheckoutProcess(driver);
-    }
+    WebDriver driver = DriverManager.getDriver();
+    private operationalUtils operationalUtil = new operationalUtils(driver);
+    private CheckoutProcess checkoutProcess = new CheckoutProcess(driver);
 
     @And("^I complete the form with email \"([^\"]*)\", Country \"([^\"]*)\", first name \"([^\"]*)\", last name \"([^\"]*)\", address \"([^\"]*)\", city \"([^\"]*)\", province \"([^\"]*)\", postal code \"([^\"]*)\" and phone \"([^\"]*)\" for store \"([^\"]*)\"$")
     public void iCompleteTheFormWithEmailCountryFirstNameLastNameAddressCityProvincePostalCodeAndPhone(String email, String country, String firstName, String lastName, String address, String city, String province, String zipCode, String phone, String language) {

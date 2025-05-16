@@ -6,6 +6,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import pages.InvestorRelations;
+import utility.DriverManager;
 
 import java.util.Date;
 import java.util.List;
@@ -18,13 +19,12 @@ import static utility.operationalUtils.parseDateFromWeb;
 import static utility.operationalUtils.splitNewLineInString;
 
 public class InvestorRelationsStepDefs {
+    WebDriver driver;
     private InvestorRelations investorRelations;
     private Date date;
-    private BaseTest bt = new BaseTest();
-
 
     public InvestorRelationsStepDefs() {
-        WebDriver driver = bt.getDriver();
+        this.driver = DriverManager.getDriver();
         this.investorRelations = new InvestorRelations(driver);
     }
 

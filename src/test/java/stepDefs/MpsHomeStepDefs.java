@@ -6,19 +6,19 @@ import org.junit.Assert;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import pages.MpsHome;
+import utility.DriverManager;
 import utility.operationalUtils;
 
 import static pages.MpsHome.PRODUCT_ITEM_RESULTS;
 import static utility.operationalUtils.splitProduct;
 
 public class MpsHomeStepDefs {
+    WebDriver driver;
     public operationalUtils operationalUtil;
     public MpsHome mpsHome;
-    private BaseTest bt = new BaseTest();
-
 
     public MpsHomeStepDefs() {
-        WebDriver driver = bt.getDriver();
+        this.driver= DriverManager.getDriver();
         this.operationalUtil = new operationalUtils(driver);
         this.mpsHome = new MpsHome(driver);
     }

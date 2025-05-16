@@ -8,6 +8,7 @@ import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import pages.SimulationElements;
+import utility.DriverManager;
 import utility.operationalUtils;
 
 import java.util.stream.Stream;
@@ -22,14 +23,13 @@ import static utility.operationalUtils.replaceTextByKeyboardKeys;
 
 public class SimulationCommonStepDefs {
 
+    WebDriver driver;
     public SimulationElements simulationElements;
     public operationalUtils operationalUtil;
     public String designName;
-    private BaseTest bt = new BaseTest();
-
 
     public SimulationCommonStepDefs() {
-        WebDriver driver = bt.getDriver();
+        this.driver = DriverManager.getDriver();
         this.simulationElements = new SimulationElements(driver);
         this.operationalUtil = new operationalUtils(driver);
     }

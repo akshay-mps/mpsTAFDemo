@@ -7,8 +7,10 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import pages.ParametricTable;
+import utility.DriverManager;
 import utility.operationalUtils;
 
+import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,17 +26,15 @@ import static utility.operationalUtils.splitInListSeparatedByComma;
 
 public class ParametricTableStepDefs {
 
+    WebDriver driver;
     public ParametricTable parametricTable;
     public operationalUtils operationalUtil;
-
     public Map<String, String> mapMinMax_Slider = new HashMap<>();
     public List<WebElement> listTempWebElement = new ArrayList<>();
     public ArrayList<String> listTemp = new ArrayList<>();
-    private BaseTest bt = new BaseTest();
-
 
     public ParametricTableStepDefs() {
-        WebDriver driver = bt.getDriver();
+        this.driver = DriverManager.getDriver();
         this.parametricTable = new ParametricTable(driver);
         this.operationalUtil = new operationalUtils(driver);
     }

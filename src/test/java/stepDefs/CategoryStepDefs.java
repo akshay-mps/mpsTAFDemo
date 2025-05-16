@@ -8,6 +8,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import pages.CategoryPage;
+import utility.DriverManager;
 import utility.operationalUtils;
 
 import java.util.List;
@@ -20,17 +21,16 @@ import static pages.CategoryPage.MAIN_DIV_CATEGORY_TILES;
 
 public class CategoryStepDefs {
 
+    WebDriver driver;
     public List<WebElement> listCategoryTiles;
     public CategoryPage category;
     public operationalUtils operationalUtil;
-    private BaseTest bt = new BaseTest();
 
     public CategoryStepDefs() {
-        WebDriver driver = bt.getDriver();
-        this.operationalUtil = new operationalUtils(driver);
+        this.driver = DriverManager.getDriver();
         this.category = new CategoryPage(driver);
+        this.operationalUtil = new operationalUtils(driver);
     }
-
     @When("^I go to category tile section$")
     public void iGoToCategoryTileSection() {
         operationalUtil.moveToElementAction(MAIN_DIV_CATEGORY_TILES);

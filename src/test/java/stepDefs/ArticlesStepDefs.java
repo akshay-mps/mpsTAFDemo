@@ -5,22 +5,19 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-//import org.springframework.beans.factory.annotation.Autowired;
 import pages.Articles;
-import pages.CategoryPage;
-import utility.operationalUtils;
+import utility.DriverManager;
 
 import static org.junit.Assert.assertTrue;
 import static org.testng.AssertJUnit.assertFalse;
 
 public class ArticlesStepDefs{
-//    @Autowired
+
+    private WebDriver driver ;
     private Articles articles;
 
-    BaseTest bt = new BaseTest();
-
     public ArticlesStepDefs() {
-        WebDriver driver = bt.getDriver();
+        this.driver = DriverManager.getDriver();
         this.articles = new Articles(driver);
     }
 

@@ -10,6 +10,7 @@ import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import pages.ProductDetail;
+import utility.DriverManager;
 import utility.operationalUtils;
 
 import static Resources.ProjectConstants.*;
@@ -18,13 +19,13 @@ import static pages.CommonElements.*;
 import static pages.ProductDetail.*;
 
 public class ProductDetailStepDefs {
+    WebDriver driver;
     public ProductDetail productDetailS;
     public operationalUtils operationalUtil;
     public static String productTitleRelatedProduct;
-    private BaseTest bt = new BaseTest();
 
     public ProductDetailStepDefs() {
-        WebDriver driver = bt.getDriver();
+        this.driver = DriverManager.getDriver();
         this.productDetailS = new ProductDetail(driver);
         this.operationalUtil = new operationalUtils(driver);
     }

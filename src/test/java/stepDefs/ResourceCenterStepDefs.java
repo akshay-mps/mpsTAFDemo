@@ -8,6 +8,7 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.interactions.Actions;
 import pages.ResourceCenter;
+import utility.DriverManager;
 import utility.operationalUtils;
 
 import java.util.ArrayList;
@@ -20,17 +21,13 @@ import static pages.ResourceCenter.*;
 
 
 public class ResourceCenterStepDefs {
-
+    private WebDriver driver;
     public ResourceCenter rCenterStep;
     public operationalUtils operationalUtil;
 
-    private WebDriver driver;
-    private BaseTest bt = new BaseTest();
-
-
 
     public ResourceCenterStepDefs() {
-        driver = bt.getDriver();
+        this.driver = DriverManager.getDriver();
         this.rCenterStep = new ResourceCenter(driver);
         this.operationalUtil = new operationalUtils(driver);
     }

@@ -1,7 +1,5 @@
 package stepDefs;
 
-import base.BaseTest;
-import io.cucumber.java.Before;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -26,9 +24,15 @@ import static pages.CommonElements.*;
 
 public class CommonElementsStepDefs{
 
-    WebDriver driver = DriverManager.getDriver();
-    operationalUtils operationalUtil = new operationalUtils(driver);
-    CommonElements commonElements = new CommonElements(driver);
+    WebDriver driver;
+    operationalUtils operationalUtil;
+    CommonElements commonElements;
+
+    public CommonElementsStepDefs() {
+        this.driver = DriverManager.getDriver();
+        this.operationalUtil = new operationalUtils(driver);
+        this.commonElements = new CommonElements(driver);
+    }
 
     public static String PRODUCT;
     public String emailForgotPassword;

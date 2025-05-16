@@ -9,6 +9,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 //import org.springframework.beans.factory.annotation.Autowired;
 import pages.Account;
+import utility.DriverManager;
 import utility.operationalUtils;
 
 import static org.junit.Assert.assertEquals;
@@ -17,18 +18,10 @@ import static pages.Account.*;
 import static pages.CommonElements.BODY_CONTAINER;
 
 public class AccountStepDefs {
-    private WebDriver driver;
-//    @Autowired
-    private Account accountStep;
-//    @Autowired
-    private operationalUtils operationalUtil;
+    private WebDriver driver = DriverManager.getDriver();
+    private Account accountStep = new Account(driver);
+    private operationalUtils operationalUtil = new operationalUtils(driver);
 
-    BaseTest bt = new BaseTest();
-
-    public AccountStepDefs() {
-        this.driver = bt.getDriver();
-//        operationalUtil = new operationalUtils(driver);
-    }
 
     @Then("^I should see the title with text \"([^\"]*)\" and information in the right section$")
     public void i_should_see_the_title_with_text_and_information_in_the_right_section(String title) {
