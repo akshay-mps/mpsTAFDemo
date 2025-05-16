@@ -6,6 +6,7 @@ import io.cucumber.java.Scenario;
 import io.qameta.allure.Allure;
 import io.qameta.allure.AllureLifecycle;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
@@ -14,8 +15,12 @@ import org.testng.annotations.BeforeSuite;
 import base.BaseTest;
 import TestRailAPI.TestRailResultUpdater;
 import TestRailAPI.TestRailTestCaseAPI;
+import ru.yandex.qatools.ashot.AShot;
+import ru.yandex.qatools.ashot.Screenshot;
 import utility.DriverManager;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -104,31 +109,40 @@ public class Hooks {
     private void captureScreenshot(Scenario scenario) {
         WebDriver driver = DriverManager.getDriver();
         if (driver instanceof TakesScreenshot) {
-            TakesScreenshot screenshotDriver = (TakesScreenshot) driver;
-            // Capture screenshot as bytes for Allure
-            byte[] screenshotBytes = screenshotDriver.getScreenshotAs(OutputType.BYTES);
-            // Capture screenshot as file for saving (optional, if you want to keep saving to disk)
-            File screenshot = screenshotDriver.getScreenshotAs(OutputType.FILE);
-
-            String featureName = getShortFeatureName(scenario.getUri().toString());
-            String scenarioName = getScenarioName(scenario);
-            String testCaseId = testRailAPI != null ? testRailAPI.getTestCaseIdForScenario(featureName, scenarioName) : "UnknownTC";
-            String screenshotDir = "target/screenshots/" + testCaseId + "/" + scenarioName;
-            String screenshotPath = screenshotDir + "/screenshot.png";
-
-            // Attach screenshot to Allure report
-            Allure.addAttachment(scenarioName + "_screenshot", "image/png", new ByteArrayInputStream(screenshotBytes), ".png");
-
-            // Optional: Save screenshot to file
             try {
-                FileUtils.forceMkdir(new File(screenshotDir));
-                FileUtils.copyFile(screenshot, new File(screenshotPath));
-                System.out.println("Screenshot saved: " + screenshotPath);
-            } catch (IOException e) {
-                System.err.println("Error saving screenshot: " + e.getMessage());
+                // Use AShot to capture the screenshot
+                AShot ashot = new AShot();
+                Screenshot screenshot = ashot.takeScreenshot(driver);
+                BufferedImage image = screenshot.getImage();
+
+                // Convert the screenshot to bytes for Allure
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ImageIO.write(image, "png", baos);
+                byte[] screenshotBytes = baos.toByteArray();
+
+                // Determine the screenshot file path (same as your original code)
+                String featureName = getShortFeatureName(scenario.getUri().toString());
+                String scenarioName = getScenarioName(scenario);
+                String testCaseId = testRailAPI != null ? testRailAPI.getTestCaseIdForScenario(featureName, scenarioName) : "UnknownTC";
+                String screenshotDir = "target/screenshots/" + testCaseId + "/" + scenarioName;
+                String screenshotPath = screenshotDir + "/screenshot.png";
+
+                // Attach the screenshot to the Allure report
+                Allure.addAttachment(scenarioName + "_screenshot", "image/png", new ByteArrayInputStream(screenshotBytes), ".png");
+
+                // Optional: Save the screenshot to a file
+                try {
+                    FileUtils.forceMkdir(new File(screenshotDir));
+                    ImageIO.write(image, "png", new File(screenshotPath));
+                    System.out.println("Screenshot saved: " + screenshotPath);
+                } catch (IOException e) {
+                    System.err.println("Error saving screenshot: " + e.getMessage());
+                }
+            } catch (Exception e) {
+                System.err.println("Error capturing screenshot with AShot: " + e.getMessage());
             }
         } else {
-            System.err.println("WebDriver is null or does not support screenshots");
+            System.err.println("WebDriver does not support screenshots");
         }
     }
 }
