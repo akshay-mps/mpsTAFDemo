@@ -3,6 +3,8 @@ package hooks;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
+import io.qameta.allure.Allure;
+import io.qameta.allure.AllureLifecycle;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
@@ -14,6 +16,7 @@ import TestRailAPI.TestRailResultUpdater;
 import TestRailAPI.TestRailTestCaseAPI;
 import utility.DriverManager;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 
@@ -102,6 +105,9 @@ public class Hooks {
         WebDriver driver = DriverManager.getDriver();
         if (driver instanceof TakesScreenshot) {
             TakesScreenshot screenshotDriver = (TakesScreenshot) driver;
+            // Capture screenshot as bytes for Allure
+            byte[] screenshotBytes = screenshotDriver.getScreenshotAs(OutputType.BYTES);
+            // Capture screenshot as file for saving (optional, if you want to keep saving to disk)
             File screenshot = screenshotDriver.getScreenshotAs(OutputType.FILE);
 
             String featureName = getShortFeatureName(scenario.getUri().toString());
@@ -110,6 +116,10 @@ public class Hooks {
             String screenshotDir = "target/screenshots/" + testCaseId + "/" + scenarioName;
             String screenshotPath = screenshotDir + "/screenshot.png";
 
+            // Attach screenshot to Allure report
+            Allure.addAttachment(scenarioName + "_screenshot", "image/png", new ByteArrayInputStream(screenshotBytes), ".png");
+
+            // Optional: Save screenshot to file
             try {
                 FileUtils.forceMkdir(new File(screenshotDir));
                 FileUtils.copyFile(screenshot, new File(screenshotPath));
