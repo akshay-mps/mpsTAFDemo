@@ -14,6 +14,7 @@ import org.openqa.selenium.support.ui.Select;
 import pages.CommonElements;
 import utility.DriverManager;
 import utility.operationalUtils;
+import static Resources.Property.*;
 
 import java.io.IOException;
 
@@ -37,8 +38,16 @@ public class CommonElementsStepDefs{
     public static String PRODUCT;
     public String emailForgotPassword;
     public String token;
-    @Given("^I am on MPS website$")
-    public void i_am_on_MPS_website() { driver.get("https://sandbox.monolithicpower.com/");
+    @Given("^I am on MPS website for store \"([^\"]*)\"$")
+    public void i_am_on_MPS_website(String store) {
+        if (store.equals("")) {
+//            driver.get(String.valueOf(BASE_URL));
+            driver.get("https://sandbox.monolithicpower.com/");
+        } else {
+//            driver.get(BASE_URL + "/" + store);
+            driver.get("https://sandbox.monolithicpower.com/");
+
+        }
     }
 
     @When("^I click on the cart button$")

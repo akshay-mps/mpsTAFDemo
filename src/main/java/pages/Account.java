@@ -42,6 +42,17 @@ public class Account extends  BaseTest{
     public static WebElement STUDENT_ACCOUNT_MESSAGE;
     @FindBy(id="subscribed")
     public static WebElement SUBSCRIBE_LETTER;
+    @FindBy(id = "mps_login")
+    public static WebElement LOGIN_BUTTON;
+    @FindBy(id = "login_email")
+    public static WebElement USER_EMAIL;
+    @FindBy(id = "login_pass")
+    public static WebElement USER_PASSWORD;
+    @FindBy(id = "bnt-social-login-authentication")
+    public static WebElement USER_LOGIN_BUTTON_POPUP;
+    @FindBy(className = "view-user-info")
+    public static WebElement USER_INFO_ICON;
+
     private WebDriver driver;
 
     public Account(WebDriver driver) {

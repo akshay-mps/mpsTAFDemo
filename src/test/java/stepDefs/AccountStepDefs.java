@@ -4,6 +4,7 @@ import base.BaseTest;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.junit.Assert;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
@@ -100,4 +101,33 @@ public class AccountStepDefs {
         operationalUtil.waitElementVisibility(5, STUDENT_ACCOUNT_MESSAGE);
         assertTrue(STUDENT_ACCOUNT_MESSAGE.isDisplayed());
        }
+
+
+    //Adding new stepdefs altogether to rewamp the suite
+    @When("^I click on login button$")
+    public void i_click_on_login_button(){
+        operationalUtil.waitElementVisibility(10, LOGIN_BUTTON);
+        LOGIN_BUTTON.click();
+    }
+    @And("^I enter my email \"([^\"]*)\"$")
+    public void i_enter_email_to_login(String email) {
+        operationalUtil.waitElementVisibility(10, USER_EMAIL);
+        USER_EMAIL.sendKeys(email);
+    }
+    @And("^I enter my password \"([^\"]*)\"$")
+    public  void i_enter_password_to_login(String password) {
+        operationalUtil.waitElementVisibility(10, USER_PASSWORD);
+        USER_PASSWORD.sendKeys(password);
+    }
+    @And ("^I click to login$")
+    public void i_click_to_login_(){
+        operationalUtil.waitElementVisibility(10, USER_LOGIN_BUTTON_POPUP);
+        USER_LOGIN_BUTTON_POPUP.click();
+    }
+    @Then("^I should be logged in$")
+    public void i_verify_the_login(){
+        operationalUtil.waitElementVisibility(10, USER_INFO_ICON);
+        Assert.assertTrue("Icon not displayed", USER_INFO_ICON.isDisplayed());
+        }
+
 }

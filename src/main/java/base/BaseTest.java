@@ -79,6 +79,7 @@ public class BaseTest {
                 WebDriverManager.chromedriver().setup();
                 ChromeOptions chromeOptions = new ChromeOptions();
                 chromeOptions.addArguments("--incognito");
+                chromeOptions.addArguments("start-maximized");
                 driver = new ChromeDriver(chromeOptions);
                 break;
             case "firefox":

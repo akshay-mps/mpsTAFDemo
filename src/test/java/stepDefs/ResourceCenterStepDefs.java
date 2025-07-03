@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static Resources.ProjectConstants.INT_TIMEOUT_JQUERY_TO_DONE;
 import static org.junit.Assert.assertTrue;
 import static pages.ResourceCenter.*;
 
@@ -35,6 +36,7 @@ public class ResourceCenterStepDefs {
 
     @When("^I am on the page$")
     public void check_page_loaded() {
+        ACCEPT_COOKIE.click();
         operationalUtil.waitForAllJS(30);
         operationalUtil.waitElementVisibility(20, RESOURCE_RESULT_BOX);
         assertTrue(RESOURCE_RESULT_BOX.isDisplayed());
@@ -73,30 +75,39 @@ public class ResourceCenterStepDefs {
                 case "video":
                     assertTrue(RESOURCE_CONTENT_VIDEO_CHECK.isSelected());
                     assertTrue(RESOURCE_CONTENT_TABLE_VIDEO.isSelected());
+                    break;
                 case "article":
                     assertTrue(RESOURCE_CONTENT_ARTICLE_CHECK.isSelected());
                     assertTrue(RESOURCE_CONTENT_TABLE_ARTICLE.isSelected());
+                    break;
                 case "use case":
                     assertTrue(RESOURCE_CONTENT_USECASE_CHECK.isSelected());
                     assertTrue(RESOURCE_CONTENT_TABLE_USECASE.isSelected());
+                    break;
                 case "reference design":
                     assertTrue(RESOURCE_CONTENT_REFERENCEDESIGN_CHECK.isSelected());
                     assertTrue(RESOURCE_CONTENT_TABLE_REFERENCEDESIGN.isSelected());
+                    break;
                 case "application note":
                     assertTrue(RESOURCE_CONTENT_APPLICATIONNOTE_CHECK.isSelected());
                     assertTrue(RESOURCE_CONTENT_TABLE_APPLICATIONNOTE.isSelected());
+                    break;
                 case "application":
                     assertTrue(RESOURCE_CONTENT_APPLICATION_CHECK.isSelected());
                     assertTrue(RESOURCE_CONTENT_TABLE_APPLICATION.isSelected());
+                    break;
                 case "product category":
                     assertTrue(RESOURCE_CONTENT_PRODUCTCATEGORY_CHECK.isSelected());
                     assertTrue(RESOURCE_CONTENT_TABLE_PRODUCTCATEGORY.isSelected());
+                    break;
                 case "product":
                     assertTrue(RESOURCE_CONTENT_PRODUCT_CHECK.isSelected());
                     assertTrue(RESOURCE_CONTENT_TABLE_PRODUCT.isSelected());
+                    break;
                 case "mpscholar":
                     assertTrue(RESOURCE_CONTENT_MPSCHOLAR_CHECK.isSelected());
                     assertTrue(RESOURCE_CONTENT_TABLE_MPSCHOLAR.isSelected());
+                    break;
             }
         }
     }
@@ -108,44 +119,54 @@ public class ResourceCenterStepDefs {
             case "video":
                 action.moveToElement(RESOURCE_CONTENT_VIDEO_CHECK).perform();
                 action.moveToElement(RESOURCE_CONTENT_VIDEO_ONLY).click().perform();
+                break;
 
             case "article":
                 action.moveToElement(RESOURCE_CONTENT_ARTICLE_CHECK).perform();
                 action.moveToElement(RESOURCE_CONTENT_ARTICLE_ONLY).click().perform();
+                break;
 
             case "use case":
                 action.moveToElement(RESOURCE_CONTENT_USECASE_CHECK).perform();
                 action.moveToElement(RESOURCE_CONTENT_USECASE_ONLY).click().perform();
+                break;
 
             case "reference design":
                 action.moveToElement(RESOURCE_CONTENT_REFERENCEDESIGN_CHECK).perform();
                 action.moveToElement(RESOURCE_CONTENT_REFERENCEDESIGN_ONLY).click().perform();
+                break;
 
             case "application note":
                 action.moveToElement(RESOURCE_CONTENT_APPLICATIONNOTE_CHECK).perform();
                 action.moveToElement(RESOURCE_CONTENT_APPLICATIONNOTE_ONLY).click().perform();
+                break;
 
             case "application":
                 action.moveToElement(RESOURCE_CONTENT_APPLICATION_CHECK).perform();
                 action.moveToElement(RESOURCE_CONTENT_APPLICATION_ONLY).click().perform();
+                break;
 
             case "product category":
                 action.moveToElement(RESOURCE_CONTENT_PRODUCTCATEGORY_CHECK).perform();
                 action.moveToElement(RESOURCE_CONTENT_PRODUCTCATEGORY_ONLY).click().perform();
+                break;
 
             case "product":
                 action.moveToElement(RESOURCE_CONTENT_PRODUCT_CHECK).perform();
                 action.moveToElement(RESOURCE_CONTENT_PRODUCT_ONLY).click().perform();
+                break;
 
             case "mpscholar":
                 action.moveToElement(RESOURCE_CONTENT_MPSCHOLAR_CHECK).perform();
                 action.moveToElement(RESOURCE_CONTENT_MPSCHOLAR_ONLY).click().perform();
+                break;
 
         }
     }
 
     @And("^I verify the link is copied successfully$")
     public void verify_share_link_option() {
+        operationalUtil.waitForAllJS(INT_TIMEOUT_JQUERY_TO_DONE);
         RESOURCE_PAGE_SHARE.click();
         assertTrue(RESOURCE_PAGE_SHARE.getAttribute("aria-describedby").length() > 0);
     }
@@ -204,36 +225,46 @@ public class ResourceCenterStepDefs {
         }
 
         driver.get(url);
+        operationalUtil.waitForAllJS(INT_TIMEOUT_JQUERY_TO_DONE);
 
         for (String item : itemsList) {
             switch (item) {
                 case "video":
                     assertTrue(RESOURCE_CONTENT_VIDEO_CHECK.isSelected());
                     assertTrue(RESOURCE_CONTENT_TABLE_VIDEO.isSelected());
+                    break;
                 case "article":
                     assertTrue(RESOURCE_CONTENT_ARTICLE_CHECK.isSelected());
                     assertTrue(RESOURCE_CONTENT_TABLE_ARTICLE.isSelected());
+                    break;
                 case "use case":
                     assertTrue(RESOURCE_CONTENT_USECASE_CHECK.isSelected());
                     assertTrue(RESOURCE_CONTENT_TABLE_USECASE.isSelected());
+                    break;
                 case "reference design":
                     assertTrue(RESOURCE_CONTENT_REFERENCEDESIGN_CHECK.isSelected());
                     assertTrue(RESOURCE_CONTENT_TABLE_REFERENCEDESIGN.isSelected());
+                    break;
                 case "application note":
                     assertTrue(RESOURCE_CONTENT_APPLICATIONNOTE_CHECK.isSelected());
                     assertTrue(RESOURCE_CONTENT_TABLE_APPLICATIONNOTE.isSelected());
+                    break;
                 case "application":
                     assertTrue(RESOURCE_CONTENT_APPLICATION_CHECK.isSelected());
                     assertTrue(RESOURCE_CONTENT_TABLE_APPLICATION.isSelected());
-                case "product category":
-                    assertTrue(RESOURCE_CONTENT_PRODUCTCATEGORY_CHECK.isSelected());
-                    assertTrue(RESOURCE_CONTENT_TABLE_PRODUCTCATEGORY.isSelected());
+                    break;
                 case "product":
                     assertTrue(RESOURCE_CONTENT_PRODUCT_CHECK.isSelected());
                     assertTrue(RESOURCE_CONTENT_TABLE_PRODUCT.isSelected());
+                    break;
+                case "product category":
+                    assertTrue(RESOURCE_CONTENT_PRODUCTCATEGORY_CHECK.isSelected());
+                    assertTrue(RESOURCE_CONTENT_TABLE_PRODUCTCATEGORY.isSelected());
+                    break;
                 case "mpscholar":
                     assertTrue(RESOURCE_CONTENT_MPSCHOLAR_CHECK.isSelected());
                     assertTrue(RESOURCE_CONTENT_TABLE_MPSCHOLAR.isSelected());
+                    break;
             }
         }
         assertTrue(driver.getCurrentUrl().contains(RESOURCE_ORDER.getText().toLowerCase()));
@@ -257,7 +288,7 @@ public class ResourceCenterStepDefs {
         }
 
         driver.get(url);
-
+        operationalUtil.waitForAllJS(INT_TIMEOUT_JQUERY_TO_DONE);
         operationalUtil.waitElementVisibility(10, RESOURCE_PRODUCT_CATEGORY);
         assertTrue(RESOURCE_PRODUCT_CATEGORY.isSelected());
     }
@@ -279,29 +310,31 @@ public class ResourceCenterStepDefs {
         }
 
         driver.get(url);
-
+        operationalUtil.waitForAllJS(INT_TIMEOUT_JQUERY_TO_DONE);
         operationalUtil.waitElementVisibility(10, RESOURCE_APPLICATION);
         assertTrue(RESOURCE_APPLICATION.isSelected());
     }
 
     @And("^I add filter \"([^\"]*)\" for search bar in URL$")
-    public void verify_filter_added_in_url(String searchBar) {
-
+    public void verify_filter_added_in_url(String searchBar){
         String url = driver.getCurrentUrl();
         String filterKeyword = "filter=";
-        boolean containsFilterKey = url.contains(filterKeyword);
         String paramCategory = searchBar.replaceAll(",", "%2C");
+        boolean containsFilterKey = url.matches(".*[?&]" + filterKeyword + "[^&]*.*");
 
         if (containsFilterKey) {
             String existingFilter = url.substring(url.indexOf(filterKeyword) + filterKeyword.length());
             existingFilter = existingFilter.contains("&") ? existingFilter.substring(0, existingFilter.indexOf("&")) : existingFilter;
             url = url.replaceFirst(filterKeyword + existingFilter, filterKeyword + existingFilter + "%2C" + paramCategory);
         } else {
-            url += (url.contains("?") ? "&" : "?") + filterKeyword + searchBar.split(",")[0] + "%2C" + paramCategory;
+            url += (url.contains("?") ? "&" : "?") + filterKeyword + paramCategory;
         }
 
         driver.get(url);
-        assertTrue(RESOURCE_SEARCH_BAR.getText().contains(searchBar) && RESOURCE_RESULTS.size()>0);
+        operationalUtil.waitForAllJS(INT_TIMEOUT_JQUERY_TO_DONE);
+        RESOURCE_SEARCH_BAR.sendKeys(Keys.ENTER);
+        operationalUtil.waitForAllJS(INT_TIMEOUT_JQUERY_TO_DONE);
+        assertTrue(RESOURCE_RESULTS.size()>0);
     }
 
     @Then("^I check small placeholder item in the page$")

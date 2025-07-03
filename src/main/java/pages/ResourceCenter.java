@@ -42,10 +42,10 @@ public class ResourceCenter extends BaseTest {
     @FindBy (xpath = "//*[@id='category-checkbox-buttons']/li[7]/div/label/input")
     public static WebElement RESOURCE_CONTENT_PRODUCTCATEGORY_CHECK;
 
-    @FindBy (xpath = "//*[@id='category-checkbox-buttons']/li[8]/div/label/input")
+    @FindBy (xpath = "//*[@id='category-checkbox-buttons']/li[9]/div/label/input")
     public static WebElement RESOURCE_CONTENT_PRODUCT_CHECK;
 
-    @FindBy (xpath = "//*[@id='category-checkbox-buttons']/li[9]/div/label/input")
+    @FindBy (xpath = "//*[@id='category-checkbox-buttons']/li[8]/div/label/input")
     public static WebElement RESOURCE_CONTENT_MPSCHOLAR_CHECK;
 
     @FindBy (xpath = "//*[@id='category-checkbox-filters']/li[1]/input")
@@ -102,7 +102,7 @@ public class ResourceCenter extends BaseTest {
     @FindBy (xpath = "//*[@id='only_type_1']/span")
     public static WebElement RESOURCE_CONTENT_PRODUCT_ONLY;
 
-    @FindBy (className = "resource-share")
+    @FindBy (xpath = "//span[@class='resource-share']")
     public static WebElement RESOURCE_PAGE_SHARE;
 
     @FindBy (xpath = "//*[@class='items']/li")
@@ -117,7 +117,7 @@ public class ResourceCenter extends BaseTest {
     @FindBy (xpath = "//input[@class='category-tag-check parent id_43' and @rel='43']")
     public static WebElement RESOURCE_PRODUCT_CATEGORY;
 
-    @FindBy (xpath = "//input[@class='category-tag-check parent id_172' and @rel='172']")
+    @FindBy (xpath = "//*[@categoryid='159']")
     public static  WebElement RESOURCE_APPLICATION;
 
     @FindBy (id = "back-top")
@@ -128,8 +128,10 @@ public class ResourceCenter extends BaseTest {
 
     @FindBy (id= "reset-filters-button")
     public static  WebElement RESOURCE_RESET_FILTER;
-    private final WebDriver driver;
 
+    @FindBy(id = "CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll")
+    public static WebElement ACCEPT_COOKIE;
+    private final WebDriver driver;
     public ResourceCenter(WebDriver driver) {
         if (driver == null) {
             throw new IllegalArgumentException("WebDriver cannot be null");

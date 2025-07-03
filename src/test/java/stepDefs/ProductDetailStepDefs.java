@@ -227,16 +227,17 @@ public class ProductDetailStepDefs {
 
     @Then("^I should see the product thumbs images$")
     public void i_should_see_the_product_thumbs_images() {
-        assertTrue(PRODUCT_THUMBSIMAGE_PDP.findElements(By.tagName("div")).size()>0);
+        assertTrue(PRODUCT_THUMBSIMAGE_PDP.findElements(By.tagName("button")).size()>0);
 
     }
 
-    @Then("^I should see the Datasheet product section with text \"([^\"]*)\" and be able to download it$")
+    @Then("^I should see the Datasheet product section and be able to download it$")
     public void i_should_see_the_Datasheet_product_section_with_text_and_be_able_to_download_it(String datasheetText) {
         assertTrue(PRODUCT_DATASHEET_PDP.isDisplayed());
         assertTrue(PRODUCT_DATASHEET_PDP.getAttribute("href").contains(STR_DOC_URL_PARTIAL));
         assertTrue(PRODUCT_DATASHEET_PDP.getAttribute("onclick").contains(STR_DOC_OPEN_FUNCTION_PARTIAL));
-        assertTrue(PRODUCT_DATASHEET_PDP.getAttribute("target").contains(STR_OPEN_NEW_TAB));assertTrue(PRODUCT_DATASHEET_PDP.isDisplayed());
+        assertTrue(PRODUCT_DATASHEET_PDP.getAttribute("target").contains(STR_OPEN_NEW_TAB));
+        assertTrue(PRODUCT_DATASHEET_PDP.isDisplayed());
     }
 
     @Then("^I should see the product description including \"([^\"]*)\" description, \"([^\"]*)\" product features content, \"([^\"]*)\" and parametrics content$")

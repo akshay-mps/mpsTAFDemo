@@ -108,7 +108,7 @@ public class ProductDetail extends BaseTest {
     public static WebElement PRODUCT_DESIGN_RESORUCES_TITLE_PDP;
     @FindBy(xpath = "//div[@class='design-resources-wrapper']")
     public static WebElement PRODUCT_DESIGN_RESOURCES_GRID_PDP;
-    @FindBy(xpath = "//div[@id='qualityscrolling']//div[@class='qulaity-docs']")
+    @FindBy(className = "qulaity-docs")
     public static WebElement PRODUCT_SEE_ALL_DOCUMENTS_QUALITY_PDP;
     @FindBy(id = "evaluationscrolling")
     public static WebElement PRODUCT_RELATED_PRODUCTS_TITLE_PDP;
