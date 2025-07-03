@@ -232,7 +232,7 @@ public class ProductDetailStepDefs {
     }
 
     @Then("^I should see the Datasheet product section and be able to download it$")
-    public void i_should_see_the_Datasheet_product_section_with_text_and_be_able_to_download_it(String datasheetText) {
+    public void i_should_see_the_Datasheet_product_section_with_text_and_be_able_to_download_it() {
         assertTrue(PRODUCT_DATASHEET_PDP.isDisplayed());
         assertTrue(PRODUCT_DATASHEET_PDP.getAttribute("href").contains(STR_DOC_URL_PARTIAL));
         assertTrue(PRODUCT_DATASHEET_PDP.getAttribute("onclick").contains(STR_DOC_OPEN_FUNCTION_PARTIAL));
