@@ -35,7 +35,7 @@ public class ProjectConstants {
     public static final int INT_TIMEOUT_LIVE_CHAT_SHOWN= 50;
     public static final int INT_TIMEOUT_DCDC_ONLINE_LOAD=100;
     public static final String STR_DC_DC_ONLINE_FRAME="dcdcDesignerFrame";
-    public static final String URL_QA01_ENV = "https://qa01.mps-aws.com";
+    public static final String URL_QA01_ENV = "https://ssm-magento-qa-1.mps-aws.com";
     public static final String TUNNEL_ID_SAUCELABS = "70e0103c6c0348e49090edb7a44bc114";
     public static final String CARD_NUMBER = "4242424242424242";
     public static final String CARD_EXPIRATION_DATE = "0650";

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Properties;
 import java.io.FileInputStream;
 import java.util.stream.Collectors;
+import static Resources.Property.*;
 
 /**
  * Synchronizes test cases from TestRail and generates feature files.
@@ -30,7 +31,7 @@ public class TestSyncManager {
     private static final String FEATURE_PATH = "src/test/java/resources/";
     private static String testRailUrl;
     private static String username;
-    private static String apiKey;
+    private static String password;
     private static String projectId;
     private static String suiteId;
 
@@ -38,16 +39,15 @@ public class TestSyncManager {
     public void syncTestCases() throws IOException {
         LOGGER.info("Starting TestRail test case synchronization");
         try {
-            Properties config = loadConfig();
-            testRailUrl = config.getProperty("testrail.url");
-            username = config.getProperty("testrail.username");
-            apiKey = config.getProperty("testrail.apiKey");
-            projectId = config.getProperty("testrail.projectId");
-            suiteId = config.getProperty("testrail.suiteId");
+            testRailUrl=TESTRAIL_URL.toString();
+            username=TESTRAIL_USERNAME.toString();
+            password=TESTRAIL_PASSWORD.toString();
+            projectId=TESTRAIL_PROJECTID.toString();
+            suiteId=TESTRAIL_SUITEID.toString();
 
-            if (testRailUrl == null || username == null || apiKey == null || projectId == null || suiteId == null) {
+            if (testRailUrl == null || username == null || password == null || projectId == null || suiteId == null) {
                 LOGGER.error("Missing configuration: url={}, user={}, apiKey={}, projectId={}, suiteId={}",
-                        testRailUrl, username, apiKey, projectId, suiteId);
+                        testRailUrl, username, password, projectId, suiteId);
                 throw new IllegalStateException("TestRail configuration is incomplete");
             }
 
@@ -90,7 +90,7 @@ public class TestSyncManager {
 
     private List<TestCase> fetchTestCases() throws IOException {
         String endpoint = testRailUrl + "/index.php?/api/v2/get_cases/" + projectId + "&suite_id=" + suiteId;
-        String auth = Base64.getEncoder().encodeToString((username + ":" + apiKey).getBytes());
+        String auth = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
 
         URL url = new URL(endpoint);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -123,12 +123,33 @@ public class TestSyncManager {
                 testCase.id = caseNode.get("id").asInt();
                 testCase.title = caseNode.get("title").asText();
                 testCase.suiteId = caseNode.get("suite_id").asInt();
-                if (caseNode.has("custom_testrail_bdd_scenario")) {
-                    JsonNode bddArray = mapper.readTree(caseNode.get("custom_testrail_bdd_scenario").asText());
-                    if (bddArray.isArray() && bddArray.size() > 0 && bddArray.get(0).has("content")) {
-                        testCase.testrailBddScenario = bddArray.get(0).get("content").asText();
+
+                // Diagnostic logging (retain temporarily)
+                String rawBddValue = null;
+                if (caseNode.has("custom_gherkin") && caseNode.get("custom_gherkin") != null && !caseNode.get("custom_gherkin").asText().trim().isEmpty()) {
+                    rawBddValue = caseNode.get("custom_gherkin").asText();
+                    LOGGER.info("Raw custom_gherkin for case {}: '{}'", testCase.id, rawBddValue);
+                    testCase.testrailBddScenario = rawBddValue; // Direct assignment for plain-text Gherkin
+                    LOGGER.info("Extracted Gherkin content length for case {}: {}", testCase.id, testCase.testrailBddScenario.length());
+                } else if (caseNode.has("custom_testrail_bdd_scenario")) {
+                    rawBddValue = caseNode.get("custom_testrail_bdd_scenario").asText();
+                    LOGGER.info("Raw custom_testrail_bdd_scenario for case {}: '{}'", testCase.id, rawBddValue);
+                    try {
+                        JsonNode bddArray = mapper.readTree(rawBddValue);
+                        LOGGER.info("Parsed bddArray type: {}, size: {}", bddArray.getNodeType(), bddArray.size());
+                        if (bddArray.isArray() && bddArray.size() > 0 && bddArray.get(0).has("content")) {
+                            testCase.testrailBddScenario = bddArray.get(0).get("content").asText();
+                            LOGGER.info("Extracted BDD scenario content length for case {}: {}", testCase.id, testCase.testrailBddScenario.length());
+                        } else {
+                            LOGGER.warn("BDD array invalid for case {}: not array, empty, or missing content[0]", testCase.id);
+                        }
+                    } catch (Exception parseE) {
+                        LOGGER.error("Failed to parse BDD JSON for case {}: {}", testCase.id, parseE.getMessage(), parseE);
                     }
+                } else {
+                    LOGGER.warn("No BDD fields present for case {}", testCase.id);
                 }
+
                 testCases.add(testCase);
             }
         } catch (Exception e) {
@@ -159,17 +180,7 @@ public class TestSyncManager {
         }
     }
 
-    private Properties loadConfig() throws IOException {
-        Properties config = new Properties();
-        String configPath = "src/config/config.properties";
-        try (FileInputStream fis = new FileInputStream(configPath)) {
-            config.load(fis);
-        } catch (IOException e) {
-            LOGGER.error("Failed to load config.properties from {}: {}", configPath, e.getMessage());
-            throw e;
-        }
-        return config;
-    }
+
 
     private static class TestCase {
         int id;

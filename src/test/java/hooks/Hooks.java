@@ -39,9 +39,6 @@ public class Hooks {
             resultUpdater = new TestRailResultUpdater();
             testRunId = resultUpdater.createTestRun();
             System.out.println("TestRail test run created: " + testRunId);
-        } catch (IOException e) {
-            System.err.println("IOException in setupSuite: " + e.getMessage());
-            resultUpdater = null;
         } catch (Exception e) {
             System.err.println("Exception in setupSuite: " + e.getMessage());
             resultUpdater = null;
@@ -66,10 +63,10 @@ public class Hooks {
                 System.out.println("Capturing screenshot for failed scenario");
                 captureScreenshot(scenario);
             }
-            if (resultUpdater != null) {
+             if (resultUpdater != null) {
                 System.out.println("Adding test result to TestRail");
-                resultUpdater.addTestResult(scenario);
-            }
+               resultUpdater.addTestResult(scenario);
+             }
         } catch (Exception e) {
             System.err.println("Error in afterScenario: " + e.getMessage());
             e.printStackTrace();

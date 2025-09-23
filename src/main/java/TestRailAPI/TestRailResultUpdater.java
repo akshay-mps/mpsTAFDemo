@@ -1,5 +1,6 @@
 package TestRailAPI;
 
+import static Resources.Property.*;
 import com.gurock.testrail.APIClient;
 import com.gurock.testrail.APIException;
 import io.cucumber.java.Scenario;
@@ -23,15 +24,15 @@ public class TestRailResultUpdater {
     private final APIClient client;
     private final TestRailTestCaseAPI testCaseAPI;
     private final List<HashMap<String, Object>> testResults;
+    private static final int ASSIGNED_USER_ID = Integer.valueOf(String.valueOf(TESTRAIL_USERID));
 
-    public TestRailResultUpdater() throws IOException {
-        Properties config = loadConfig();
-        String url = config.getProperty("testrail.url");
-        String username = config.getProperty("testrail.username");
-        String apiKey = config.getProperty("testrail.apiKey");
+    public TestRailResultUpdater() {
+        String url = String.valueOf(TESTRAIL_URL);
+        String username = String.valueOf(TESTRAIL_USERNAME);
+        String password = String.valueOf(TESTRAIL_PASSWORD);
         this.client = new APIClient(url);
         this.client.setUser(username);
-        this.client.setPassword(apiKey);
+        this.client.setPassword(password);
         this.testCaseAPI = TestRailTestCaseAPI.getInstance();
         this.testResults = new ArrayList<>();
         LOGGER.info("Initialized TestRailResultUpdater");
@@ -39,14 +40,15 @@ public class TestRailResultUpdater {
 
     public int createTestRun() {
         try {
-            Properties config = loadConfig();
-            int projectId = Integer.parseInt(config.getProperty("testrail.projectId"));
-            int suiteId = Integer.parseInt(config.getProperty("testrail.suiteId"));
+            int projectId = Integer.parseInt(TESTRAIL_PROJECTID.toString());
+            int suiteId = Integer.parseInt(TESTRAIL_SUITEID.toString());
             String runName = "Test Run " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             HashMap<String, Object> runData = new HashMap<>();
             runData.put("suite_id", suiteId);
             runData.put("name", runName);
             runData.put("project_id", projectId);
+            runData.put("assignedto_id", ASSIGNED_USER_ID);
+            runData.put("description", "Automated run by " + TESTRAIL_USERNAME + " via Jenkins");
             HashMap<String, Object> response = (HashMap<String, Object>) client.sendPost("add_run/" + projectId, runData);
             int runId = (Integer) response.get("id");
             LOGGER.info("Created TestRail test run: {} (ID: {})", runName, runId);
@@ -81,6 +83,10 @@ public class TestRailResultUpdater {
             LOGGER.warn("No test results to send to TestRail");
             return;
         }
+        if (runId == -1) {
+            LOGGER.error("Invalid run ID, cannot send test results");
+            return;
+        }
 
         try {
             HashMap<String, Object> data = new HashMap<>();
@@ -94,18 +100,18 @@ public class TestRailResultUpdater {
         }
     }
 
-    private Properties loadConfig() throws IOException {
-        Properties config = new Properties();
-        String configPath = "src/main/config/config.properties";
-        try (FileInputStream fis = new FileInputStream(configPath)) {
-            config.load(fis);
-            LOGGER.info("Loaded configuration from: {}", configPath);
-        } catch (IOException e) {
-            LOGGER.error("Failed to load config.properties from {}: {}", configPath, e.getMessage(), e);
-            throw e;
-        }
-        return config;
-    }
+//    private Properties loadConfig() throws IOException {
+//        Properties config = new Properties();
+//        String configPath = "src/main/config/config.properties";
+//        try (FileInputStream fis = new FileInputStream(configPath)) {
+//            config.load(fis);
+//            LOGGER.info("Loaded configuration from: {}", configPath);
+//        } catch (IOException e) {
+//            LOGGER.error("Failed to load config.properties from {}: {}", configPath, e.getMessage(), e);
+//            throw e;
+//        }
+//        return config;
+//    }
 
     private String getShortFeatureName(String uri) {
         String fileName = uri.substring(uri.lastIndexOf("/") + 1);

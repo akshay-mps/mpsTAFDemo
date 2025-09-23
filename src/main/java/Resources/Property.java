@@ -45,10 +45,13 @@ public enum Property {
         //Test Management
         TEST_RAIL_FLAG(Optional.ofNullable(System.getProperty("testrail.flag")).orElse("true")),
         TESTRAIL_URL(Optional.ofNullable(System.getProperty("testrail.url")).orElse("https://mpsmps.testrail.io/")),
-        TESTRAIL_USERNAME(Optional.ofNullable(System.getProperty("testrail.username")).orElse("raul.tellez@monolithicpower.com")),
-        TESTRAIL_PASSWORD(Optional.ofNullable(System.getProperty("testrail.password")).orElse("Alejandro12")),
-        TESTRAIL_PROJECT_NAME(Optional.ofNullable(System.getProperty("testrail.projectname")).orElse("MPS.com v2")),
+        TESTRAIL_USERNAME(Optional.ofNullable(System.getProperty("testrail.username")).orElse("akshay.chauhan@monolithicpower.com")),
+        TESTRAIL_PASSWORD(Optional.ofNullable(System.getProperty("testrail.password")).orElse("Iforgot@123")),
+        TESTRAIL_PROJECT_NAME(Optional.ofNullable(System.getProperty("testrail.projectname")).orElse("singleTestCase")),
         TESTRAIL_SECTION_NAME(Optional.ofNullable(System.getProperty("testrail.sectionname")).orElse("Search Box")),
+        TESTRAIL_PROJECTID(Optional.ofNullable(System.getProperty("testrail.projectid")).orElse("3")),
+        TESTRAIL_SUITEID(Optional.ofNullable(System.getProperty("testrail.suiteid")).orElse("7")),
+        TESTRAIL_USERID(Optional.ofNullable(System.getProperty("testrail.userid")).orElse("4")),
 
         // SauceLabs
         SAUCELABS_ENABLED(Optional.ofNullable(System.getProperty("saucelabs.enabled")).orElse("false")),

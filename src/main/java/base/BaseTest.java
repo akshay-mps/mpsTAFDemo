@@ -16,13 +16,14 @@ import utility.DriverManager;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
+import static Resources.Property.*;
+
 
 public class BaseTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseTest.class);
     private Properties prop;
 
     public BaseTest() {
-        // Properties initialized in setup
     }
 
     public WebDriver getDriver() {
@@ -66,7 +67,7 @@ public class BaseTest {
     }
 
     private WebDriver initializeDriver() {
-        String browserName = prop.getProperty("browserName");
+        String browserName = BROWSER_NAME.toString();
         if (browserName == null || browserName.trim().isEmpty()) {
             LOGGER.error("browserName property is missing or empty in config.properties");
             throw new IllegalArgumentException("browserName property is missing or empty");

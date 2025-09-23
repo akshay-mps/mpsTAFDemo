@@ -41,11 +41,9 @@ public class CommonElementsStepDefs{
     @Given("^I am on MPS website for store \"([^\"]*)\"$")
     public void i_am_on_MPS_website(String store) {
         if (store.equals("")) {
-//            driver.get(String.valueOf(BASE_URL));
-            driver.get("https://sandbox.monolithicpower.com/");
+            driver.get(String.valueOf(BASE_URL));
         } else {
-//            driver.get(BASE_URL + "/" + store);
-            driver.get("https://sandbox.monolithicpower.com/");
+            driver.get(BASE_URL + "/" + store);
 
         }
     }
