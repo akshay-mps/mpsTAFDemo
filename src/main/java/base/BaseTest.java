@@ -1,23 +1,16 @@
 package base;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.edge.EdgeDriver;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
-import org.openqa.selenium.safari.SafariDriver;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.PageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import utility.DriverManager;
-
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
-import static Resources.Property.*;
 
+import static Resources.Property.*;
+import base.DesiredCapabilitiesConfig;
 
 public class BaseTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseTest.class);
@@ -37,7 +30,6 @@ public class BaseTest {
 
     public WebDriver setup() throws IOException {
         try {
-            loadProperties();
             WebDriver driver = initializeDriver();
             if (driver == null) {
                 throw new IllegalStateException("initializeDriver() returned null");
@@ -53,53 +45,18 @@ public class BaseTest {
         }
     }
 
-    private void loadProperties() throws IOException {
-        prop = new Properties();
-        String filePath = "src/config/config.properties";
-        LOGGER.info("Attempting to load configuration from: {}", filePath);
-        try (FileInputStream config = new FileInputStream(filePath)) {
-            prop.load(config);
-            LOGGER.info("Successfully loaded configuration from: {}", filePath);
-        } catch (IOException e) {
-            LOGGER.error("Failed to load configuration file: {}", filePath, e);
-            throw new IOException("Failed to load configuration file: " + filePath, e);
-        }
-    }
-
     private WebDriver initializeDriver() {
-        String browserName = BROWSER_NAME.toString();
+        String browserName = BROWSER_NAME.toString(); // Assuming BROWSER_NAME is correctly defined somewhere
         if (browserName == null || browserName.trim().isEmpty()) {
-            LOGGER.error("browserName property is missing or empty in config.properties");
+            LOGGER.error("browserName property is missing or empty");
             throw new IllegalArgumentException("browserName property is missing or empty");
         }
-        LOGGER.info("Initializing WebDriver for browser: {}", browserName);
 
-        WebDriver driver;
-        switch (browserName.toLowerCase()) {
-            case "chrome":
-                WebDriverManager.chromedriver().setup();
-                ChromeOptions chromeOptions = new ChromeOptions();
-                chromeOptions.addArguments("--incognito");
-                chromeOptions.addArguments("start-maximized");
-                driver = new ChromeDriver(chromeOptions);
-                break;
-            case "firefox":
-                WebDriverManager.firefoxdriver().setup();
-                FirefoxOptions firefoxOptions = new FirefoxOptions();
-                driver = new FirefoxDriver(firefoxOptions);
-                break;
-            case "edge":
-                WebDriverManager.edgedriver().setup();
-                driver = new EdgeDriver();
-                break;
-            case "safari":
-                driver = new SafariDriver();
-                break;
-            default:
-                LOGGER.error("Unsupported browser: {}", browserName);
-                throw new IllegalArgumentException("Unsupported browser: " + browserName);
-        }
-        return driver;
+        LOGGER.info("Initializing WebDriver with browser: {}", browserName);
+
+        // Create an instance of DesiredCapabilitiesConfig to access getDriver method
+        DesiredCapabilitiesConfig capabilitiesConfig = new DesiredCapabilitiesConfig();
+        return capabilitiesConfig.getDriver(browserName); // Call getDriver() from DesiredCapabilitiesConfig
     }
 
     private void initElements() {
