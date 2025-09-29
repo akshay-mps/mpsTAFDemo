@@ -6,134 +6,106 @@ import com.gurock.testrail.APIException;
 import io.cucumber.java.Scenario;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
- * Updates TestRail with test results for a test run.
+ * Sends results dynamically to TestRail for all scenarios.
  */
 public class TestRailResultUpdater {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestRailResultUpdater.class);
     private final APIClient client;
     private final TestRailTestCaseAPI testCaseAPI;
     private final List<HashMap<String, Object>> testResults;
-    private static final int ASSIGNED_USER_ID = Integer.valueOf(String.valueOf(TESTRAIL_USERID));
+    private static final int ASSIGNED_USER_ID = Integer.parseInt(TESTRAIL_USERID.toString());
 
     public TestRailResultUpdater() {
-        String url = String.valueOf(TESTRAIL_URL);
-        String username = String.valueOf(TESTRAIL_USERNAME);
-        String password = String.valueOf(TESTRAIL_PASSWORD);
-        this.client = new APIClient(url);
-        this.client.setUser(username);
-        this.client.setPassword(password);
-        this.testCaseAPI = TestRailTestCaseAPI.getInstance();
-        this.testResults = new ArrayList<>();
+        client = new APIClient(TESTRAIL_URL.toString());
+        client.setUser(TESTRAIL_USERNAME.toString());
+        client.setPassword(TESTRAIL_PASSWORD.toString());
+        testCaseAPI = TestRailTestCaseAPI.getInstance();
+        testResults = new ArrayList<>();
         LOGGER.info("Initialized TestRailResultUpdater");
     }
 
-    public int createTestRun() {
+    public int createTestRun(String runName) {
         try {
             int projectId = Integer.parseInt(TESTRAIL_PROJECTID.toString());
             int suiteId = Integer.parseInt(TESTRAIL_SUITEID.toString());
-            String runName = "Test Run " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
             HashMap<String, Object> runData = new HashMap<>();
             runData.put("suite_id", suiteId);
             runData.put("name", runName);
             runData.put("project_id", projectId);
             runData.put("assignedto_id", ASSIGNED_USER_ID);
-            runData.put("description", "Automated run by " + TESTRAIL_USERNAME + " via Jenkins");
+            runData.put("description", "Automated run by " + TESTRAIL_USERNAME);
+
             HashMap<String, Object> response = (HashMap<String, Object>) client.sendPost("add_run/" + projectId, runData);
-            int runId = (Integer) response.get("id");
+
+            System.out.println("TestRail API response for createTestRun: " + response);
+
+            Object idObj = response.get("id");
+            if (idObj == null) {
+                throw new RuntimeException("No run ID returned from TestRail API. Check project/suite IDs and permissions.");
+            }
+
+            int runId = idObj instanceof Long ? ((Long) idObj).intValue() : (Integer) idObj;
             LOGGER.info("Created TestRail test run: {} (ID: {})", runName, runId);
+
             return runId;
+
         } catch (IOException | APIException e) {
-            LOGGER.error("Failed to create TestRail test run: {}", e.getMessage(), e);
-            throw new RuntimeException("TestRail test run creation failed", e);
+            LOGGER.error("Failed to create TestRail test run", e);
+            throw new RuntimeException(e);
         }
     }
 
-    public void addTestResult(Scenario scenario) {
-        String featureName = getShortFeatureName(scenario.getUri().toString());
-        String scenarioName = getScenarioName(scenario);
-        String testCaseId = testCaseAPI.getTestCaseIdForScenario(featureName, scenarioName);
-
-        int caseId = parseCaseIdFromTestCaseId(testCaseId);
-        if (caseId == -1) {
-            LOGGER.warn("Skipping TestRail result update for unmapped scenario: {}", scenario.getName());
-            return;
-        }
-
+    public void addTestResult(int runId, String testCaseId, String status) {
+        int statusId = "passed".equalsIgnoreCase(status) ? 1 : 5;
         HashMap<String, Object> result = new HashMap<>();
-        result.put("case_id", caseId);
-        result.put("status_id", scenario.isFailed() ? 5 : 1); // 5 = Failed, 1 = Passed
-        result.put("comment", scenario.isFailed() ? "Failed: " + scenario.getName() : "Passed: " + scenario.getName());
+        result.put("case_id", parseCaseId(testCaseId));
+        result.put("status_id", statusId);
+        result.put("comment", "Automated result: " + status);
         testResults.add(result);
-        LOGGER.info("Added result for TestRail case ID {}: {}", caseId, result.get("status_id").equals(1) ? "Passed" : "Failed");
+        LOGGER.info("Added TestRail result to local list: {} -> {}", testCaseId, status);
+    }
+
+    public void addAttachmentToResult(int runId, String testCaseId, String filePath) {
+        if ("UnknownTC".equals(testCaseId)) return;
+        try {
+            HashMap<String, Object> data = new HashMap<>();
+            data.put("attachment", new File(filePath));
+            Object response = client.sendPost("add_attachment_to_result/" + runId + "/" + parseCaseId(testCaseId), data);
+            LOGGER.info("Added screenshot attachment for {}. API response: {}", testCaseId, response);
+        } catch (IOException | APIException e) {
+            LOGGER.error("Failed to add attachment to TestRail for {}", testCaseId, e);
+        }
     }
 
     public void sendTestResults(int runId) {
         if (testResults.isEmpty()) {
-            LOGGER.warn("No test results to send to TestRail");
+            System.out.println("No test results to send to TestRail. testResults list is empty.");
             return;
         }
-        if (runId == -1) {
-            LOGGER.error("Invalid run ID, cannot send test results");
-            return;
-        }
+
+        System.out.println("Sending " + testResults.size() + " result(s) to TestRail run " + runId);
+        System.out.println("Payload: " + testResults);
 
         try {
             HashMap<String, Object> data = new HashMap<>();
-            data.put("results", testResults);
-            client.sendPost("add_results_for_cases/" + runId, data);
-            LOGGER.info("Successfully sent {} test results to TestRail run ID {}", testResults.size(), runId);
+            data.put("results", new ArrayList<>(testResults));
+            Object response = client.sendPost("add_results_for_cases/" + runId, data);
+            System.out.println("TestRail API response for add_results_for_cases: " + response);
+
             testResults.clear();
+            LOGGER.info("Sent results for run {}", runId);
         } catch (IOException | APIException e) {
-            LOGGER.error("Failed to send test results to TestRail for run ID {}: {}", runId, e.getMessage(), e);
-            throw new RuntimeException("TestRail result update failed", e);
+            LOGGER.error("Failed to send TestRail results", e);
         }
     }
 
-//    private Properties loadConfig() throws IOException {
-//        Properties config = new Properties();
-//        String configPath = "src/main/config/config.properties";
-//        try (FileInputStream fis = new FileInputStream(configPath)) {
-//            config.load(fis);
-//            LOGGER.info("Loaded configuration from: {}", configPath);
-//        } catch (IOException e) {
-//            LOGGER.error("Failed to load config.properties from {}: {}", configPath, e.getMessage(), e);
-//            throw e;
-//        }
-//        return config;
-//    }
-
-    private String getShortFeatureName(String uri) {
-        String fileName = uri.substring(uri.lastIndexOf("/") + 1);
-        return fileName.replace(".feature", "").toLowerCase();
-    }
-
-    private String getScenarioName(Scenario scenario) {
-        return "S" + scenario.getLine();
-    }
-
-    private int parseCaseIdFromTestCaseId(String testCaseId) {
-        String featureScenario = testCaseAPI.getTestCaseMapping().get(testCaseId);
-        if (featureScenario == null) {
-            LOGGER.error("No mapping found for test case ID: {}", testCaseId);
-            return -1;
-        }
-        String caseIdStr = featureScenario.substring(featureScenario.lastIndexOf("S") + 1);
-        try {
-            return Integer.parseInt(caseIdStr);
-        } catch (NumberFormatException e) {
-            LOGGER.error("Invalid case ID format in featureScenario: {}", featureScenario);
-            return -1;
-        }
+    private int parseCaseId(String testCaseId) {
+        return Integer.parseInt(testCaseId.replaceAll("\\D", ""));
     }
 }

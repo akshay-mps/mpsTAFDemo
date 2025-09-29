@@ -4,14 +4,8 @@ import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
 import io.qameta.allure.Allure;
-import io.qameta.allure.AllureLifecycle;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
-import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeSuite;
 import base.BaseTest;
 import TestRailAPI.TestRailResultUpdater;
 import TestRailAPI.TestRailTestCaseAPI;
@@ -24,122 +18,132 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+import static Resources.Property.TEST_RAIL_FLAG;
 
 public class Hooks {
-    private final BaseTest baseTest = new BaseTest();
-    private TestRailTestCaseAPI testRailAPI;
-    private TestRailResultUpdater resultUpdater;
-    private int testRunId;
 
-    @BeforeSuite
+    private BaseTest baseTest;
+    private static TestRailResultUpdater resultUpdater;
+    private static TestRailTestCaseAPI testRailAPI;
+    private static int testRunId;
+
+    // -------------------- BEFORE SUITE --------------------
+    @Before(order = 0)
     public void setupSuite() {
-        System.out.println("Starting setupSuite");
-        try {
-            testRailAPI = TestRailTestCaseAPI.getInstance();
-            resultUpdater = new TestRailResultUpdater();
-            testRunId = resultUpdater.createTestRun();
-            System.out.println("TestRail test run created: " + testRunId);
-        } catch (Exception e) {
-            System.err.println("Exception in setupSuite: " + e.getMessage());
-            resultUpdater = null;
-        }
-    }
+        baseTest = new BaseTest();
+        if (Boolean.parseBoolean(TEST_RAIL_FLAG.toString())) {
+            if (resultUpdater == null) {
+                resultUpdater = new TestRailResultUpdater();
+                testRailAPI = TestRailTestCaseAPI.getInstance();
 
-    @Before
-    public void beforeScenario(Scenario scenario) throws IOException {
-        System.out.println("Starting beforeScenario: " + scenario.getName());
-        WebDriver driver = baseTest.setup();
-        if (driver == null) {
-            throw new IllegalStateException("BaseTest.setup() returned null WebDriver");
-        }
-        System.out.println("WebDriver initialized for: " + scenario.getName());
-    }
+                String runName = "Automated Run - " +
+                        LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
 
-    @After
-    public void afterScenario(Scenario scenario) {
-        System.out.println("Starting afterScenario: " + scenario.getName());
-        try {
-            if (scenario.isFailed()) {
-                System.out.println("Capturing screenshot for failed scenario");
-                captureScreenshot(scenario);
+                testRunId = resultUpdater.createTestRun(runName);
+                System.out.println("=== TestRail Run Created: " + testRunId + " ===");
             }
-             if (resultUpdater != null) {
-                System.out.println("Adding test result to TestRail");
-               resultUpdater.addTestResult(scenario);
-             }
+        }
+    }
+
+    // -------------------- BEFORE SCENARIO --------------------
+    @Before(order = 1)
+    public void beforeScenario(Scenario scenario) throws IOException {
+        if (baseTest == null) baseTest = new BaseTest();
+
+        if (DriverManager.getDriver() == null) {
+            WebDriver driver = baseTest.setup();  // initializes WebDriver from BaseTest
+            DriverManager.setDriver(driver);
+        }
+
+        System.out.println("=== Before Scenario: " + scenario.getName() + " ===");
+    }
+
+    // -------------------- AFTER SCENARIO --------------------
+    @After(order = 1)
+    public void afterScenario(Scenario scenario) {
+        WebDriver driver = DriverManager.getDriver();
+        String screenshotPath = null;
+
+        try {
+            // Capture screenshot if scenario failed
+            if (scenario.isFailed() && driver != null) {
+                screenshotPath = captureScreenshot(scenario, driver);
+            }
+
+            // Update TestRail
+            if (Boolean.parseBoolean(TEST_RAIL_FLAG.toString()) && resultUpdater != null && testRailAPI != null) {
+                String featureName = getShortFeatureName(scenario.getUri().toString());
+                String scenarioName = scenario.getName();
+                String testCaseId = testRailAPI.getTestCaseIdForScenario(featureName, scenarioName);
+
+                if (!"UnknownTC".equals(testCaseId)) {
+                    resultUpdater.addTestResult(testRunId, testCaseId, scenario.isFailed() ? "failed" : "passed");
+
+                    if (screenshotPath != null) {
+                        resultUpdater.addAttachmentToResult(testRunId, testCaseId, screenshotPath);
+                    }
+                }
+            }
+
         } catch (Exception e) {
-            System.err.println("Error in afterScenario: " + e.getMessage());
             e.printStackTrace();
         } finally {
-            System.out.println("Tearing down WebDriver");
-            baseTest.tearDown();
-            System.out.println("Finished afterScenario: " + scenario.getName());
+            // Clean up WebDriver
+            if (driver != null) {
+                try { driver.quit(); } catch (Exception e) { e.printStackTrace(); }
+            }
+            DriverManager.removeDriver();
         }
+
+        System.out.println("=== After Scenario completed: " + scenario.getName() + " ===");
     }
 
-    @AfterSuite
+    // -------------------- AFTER SUITE --------------------
+    @After(order = 0)
     public void tearDownSuite() {
-        System.out.println("Starting tearDownSuite");
-        if (resultUpdater != null) {
-            try {
-                resultUpdater.sendTestResults(testRunId);
-                System.out.println("TestRail results sent for run: " + testRunId);
-            } catch (Exception e) {
-                System.err.println("Error in tearDownSuite: " + e.getMessage());
-                e.printStackTrace();
-            }
+        if (Boolean.parseBoolean(TEST_RAIL_FLAG.toString()) && resultUpdater != null) {
+            resultUpdater.sendTestResults(testRunId);
+            System.out.println("=== TestRail results sent for run: " + testRunId + " ===");
         }
-        // Ensure all WebDrivers are closed
-        DriverManager.removeDriver();
-        System.out.println("Finished tearDownSuite");
+        System.out.println("=== After Suite: All scenarios completed ===");
+    }
+
+    // -------------------- HELPER METHODS --------------------
+    private String captureScreenshot(Scenario scenario, WebDriver driver) {
+        try {
+            Screenshot screenshot = new AShot().takeScreenshot(driver);
+            BufferedImage image = screenshot.getImage();
+
+            // Attach to Allure
+            ByteArrayInputStream bis;
+            try (var baos = new java.io.ByteArrayOutputStream()) {
+                ImageIO.write(image, "png", baos);
+                bis = new ByteArrayInputStream(baos.toByteArray());
+            }
+            Allure.addAttachment(scenario.getName() + "_screenshot", "image/png", bis, ".png");
+
+            // Save locally
+            String featureName = getShortFeatureName(scenario.getUri().toString());
+            String scenarioName = scenario.getName().replaceAll("\\s+", "_");
+            String testCaseId = testRailAPI.getTestCaseIdForScenario(featureName, scenarioName);
+            String screenshotDir = "target/screenshots/" + testCaseId + "/" + scenarioName;
+            FileUtils.forceMkdir(new File(screenshotDir));
+            String screenshotPath = screenshotDir + "/screenshot.png";
+            ImageIO.write(image, "png", new File(screenshotPath));
+
+            return screenshotPath;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private String getShortFeatureName(String uri) {
-        String fileName = uri.substring(uri.lastIndexOf("/") + 1);
-        return fileName.replace(".feature", "").toLowerCase();
-    }
-
-    private String getScenarioName(Scenario scenario) {
-        return "S" + scenario.getLine();
-    }
-
-    private void captureScreenshot(Scenario scenario) {
-        WebDriver driver = DriverManager.getDriver();
-        if (driver instanceof TakesScreenshot) {
-            try {
-                // Use AShot to capture the screenshot
-                AShot ashot = new AShot();
-                Screenshot screenshot = ashot.takeScreenshot(driver);
-                BufferedImage image = screenshot.getImage();
-
-                // Convert the screenshot to bytes for Allure
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                ImageIO.write(image, "png", baos);
-                byte[] screenshotBytes = baos.toByteArray();
-
-                // Determine the screenshot file path (same as your original code)
-                String featureName = getShortFeatureName(scenario.getUri().toString());
-                String scenarioName = getScenarioName(scenario);
-                String testCaseId = testRailAPI != null ? testRailAPI.getTestCaseIdForScenario(featureName, scenarioName) : "UnknownTC";
-                String screenshotDir = "target/screenshots/" + testCaseId + "/" + scenarioName;
-                String screenshotPath = screenshotDir + "/screenshot.png";
-
-                // Attach the screenshot to the Allure report
-                Allure.addAttachment(scenarioName + "_screenshot", "image/png", new ByteArrayInputStream(screenshotBytes), ".png");
-
-                // Optional: Save the screenshot to a file
-                try {
-                    FileUtils.forceMkdir(new File(screenshotDir));
-                    ImageIO.write(image, "png", new File(screenshotPath));
-                    System.out.println("Screenshot saved: " + screenshotPath);
-                } catch (IOException e) {
-                    System.err.println("Error saving screenshot: " + e.getMessage());
-                }
-            } catch (Exception e) {
-                System.err.println("Error capturing screenshot with AShot: " + e.getMessage());
-            }
-        } else {
-            System.err.println("WebDriver does not support screenshots");
-        }
+        return uri.substring(uri.lastIndexOf("/") + 1)
+                .replace(".feature", "")
+                .toLowerCase();
     }
 }
