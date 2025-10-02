@@ -46,17 +46,21 @@ public class BaseTest {
     }
 
     private WebDriver initializeDriver() {
-        String browserName = BROWSER_NAME.toString(); // Assuming BROWSER_NAME is correctly defined somewhere
+        String browserName = BROWSER_NAME.toString();
+        String runEnv = SAUCELABS_ENABLED.toString();
+
         if (browserName == null || browserName.trim().isEmpty()) {
             LOGGER.error("browserName property is missing or empty");
             throw new IllegalArgumentException("browserName property is missing or empty");
         }
-
+        if (runEnv == null || runEnv.trim().isEmpty() || runEnv.trim().equals("no")) {
+            LOGGER.warn("SauceLabs not enabled, defaulting to local execution");
+        }
         LOGGER.info("Initializing WebDriver with browser: {}", browserName);
 
         // Create an instance of DesiredCapabilitiesConfig to access getDriver method
         DesiredCapabilitiesConfig capabilitiesConfig = new DesiredCapabilitiesConfig();
-        return capabilitiesConfig.getDriver(browserName); // Call getDriver() from DesiredCapabilitiesConfig
+        return capabilitiesConfig.getDriver(browserName, runEnv);
     }
 
     private void initElements() {

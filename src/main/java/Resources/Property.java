@@ -58,7 +58,8 @@ public enum Property {
         SAUCELABS_TUNNEL(Optional.ofNullable(System.getProperty("saucelabs.tunnel")).orElse("")),
         SAUCELABS_USERNAME(Optional.ofNullable(System.getProperty("saucelabs.username")).orElse("anthony.brittis")),
         SAUCELABS_ACCESS_KEY(Optional.ofNullable(System.getProperty("saucelabs.accessKey")).orElse("f8e2e50a-0831-4e22-ab05-e667e6a3e9ac")),
-        SAUCELABS_REMOTE_URL(Optional.ofNullable(System.getProperty("saucelabs.remoteUrl")).orElse("https://ondemand.saucelabs.com/wd/hub"));
+        SAUCELABS_REMOTE_URL(Optional.ofNullable(System.getProperty("saucelabs.remoteUrl")).orElse("@ondemand.us-west-1.saucelabs.com:443/wd/hub")),
+        SAUCELABS_BUILD_NAME("RegressionSuite");
 
         private String value;
 

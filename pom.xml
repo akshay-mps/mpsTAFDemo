@@ -137,6 +137,20 @@
             <artifactId>jaxb-impl</artifactId>
             <version>2.3.1</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.saucelabs/sauce_bindings -->
+        <dependency>
+            <groupId>com.saucelabs</groupId>
+            <artifactId>sauce_bindings</artifactId>
+            <version>1.6.0</version>
+        </dependency>
+
+        <!-- JSON (if you want to parse API responses for job status) -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20240303</version>
+        </dependency>
     </dependencies>
 
     <build>

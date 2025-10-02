@@ -10,34 +10,82 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.safari.SafariOptions;
 import org.openqa.selenium.PageLoadStrategy;
+import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.MutableCapabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.github.bonigarcia.wdm.WebDriverManager;
 
+import java.net.URL;
+import java.time.LocalDateTime;
+
+
+import static Resources.Property.*;
+
 public class DesiredCapabilitiesConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger(DesiredCapabilitiesConfig.class);
 
-    public WebDriver getDriver(String browserName) {
+    public WebDriver getDriver(String browserName, String runEnv) {
         if (browserName == null || browserName.trim().isEmpty()) {
             LOGGER.error("browserName is null or empty");
             throw new IllegalArgumentException("browserName is null or empty");
         }
 
-        LOGGER.info("Setting up WebDriver for browser: {}", browserName);
-        switch (browserName.toLowerCase()) {
-            case "chrome":
-                return setupChromeDriver();
-            case "firefox":
-                return setupFirefoxDriver();
-            case "edge":
-                return setupEdgeDriver();
-            case "safari":
-                return setupSafariDriver();
-            default:
-                LOGGER.error("Unsupported browser: {}", browserName);
-                throw new IllegalArgumentException("Unsupported browser: " + browserName);
+        String executionEnv = SAUCELABS_ENABLED.toString(); // check if saucelab is enabled
+        LOGGER.info("Execution environment: {}", executionEnv);
+
+        if ("yes".equalsIgnoreCase(runEnv)) {
+            return setupSauceDriver(browserName);
+        } else {
+            LOGGER.info("Setting up LOCAL WebDriver for browser: {}", browserName);
+            switch (browserName.toLowerCase()) {
+                case "chrome":
+                    return setupChromeDriver();
+                case "firefox":
+                    return setupFirefoxDriver();
+                case "edge":
+                    return setupEdgeDriver();
+                case "safari":
+                    return setupSafariDriver();
+                default:
+                    LOGGER.error("Unsupported browser: {}", browserName);
+                    throw new IllegalArgumentException("Unsupported browser: " + browserName);
+            }
         }
     }
+
+    private WebDriver setupSauceDriver(String browserName) {
+        try {
+            if (SAUCELABS_USERNAME == null || SAUCELABS_ACCESS_KEY == null || SAUCELABS_REMOTE_URL == null) {
+                throw new IllegalStateException("SauceLabs credentials/URL is not set!");
+            }
+
+            String sauceUrl = "https://" + SAUCELABS_USERNAME + ":" + SAUCELABS_ACCESS_KEY + SAUCELABS_REMOTE_URL;
+
+            MutableCapabilities sauceOptions = new MutableCapabilities();
+
+            String buildName = SAUCELABS_BUILD_NAME + "_" +
+                    java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+            sauceOptions.setCapability("build", buildName);
+
+            sauceOptions.setCapability("name", "Scenario Execution - " + browserName);
+
+            MutableCapabilities capabilities = new MutableCapabilities();
+            capabilities.setCapability("browserName", browserName);
+            capabilities.setCapability("browserVersion", "latest");
+            capabilities.setCapability("platformName", "Windows 11");
+            capabilities.setCapability("sauce:options", sauceOptions);
+
+            LOGGER.info("Launching tests on Sauce Labs with browser: {}, build: {}", browserName, buildName);
+            return new RemoteWebDriver(new URL(sauceUrl), capabilities);
+
+        } catch (Exception e) {
+            LOGGER.error("Failed to initialize SauceLabs driver: {}", e.getMessage(), e);
+            throw new RuntimeException("SauceLabs driver setup failed", e);
+        }
+    }
+
 
     private WebDriver setupChromeDriver() {
         WebDriverManager.chromedriver().setup();
@@ -71,7 +119,6 @@ public class DesiredCapabilitiesConfig {
 
     private WebDriver setupEdgeDriver() {
         WebDriverManager.edgedriver().setup();
-        WebDriverManager.edgedriver().driverVersion("126.0.2592.102").setup(); // Replace with a known version
         EdgeOptions edgeOptions = new EdgeOptions();
         edgeOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
         edgeOptions.addArguments("--inprivate");

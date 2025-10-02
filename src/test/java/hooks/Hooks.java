@@ -5,6 +5,7 @@ import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
 import io.qameta.allure.Allure;
 import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import base.BaseTest;
 import TestRailAPI.TestRailResultUpdater;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static Resources.Property.SAUCELABS_ENABLED;
 import static Resources.Property.TEST_RAIL_FLAG;
 
 public class Hooks {
@@ -34,6 +36,13 @@ public class Hooks {
     @Before(order = 0)
     public void setupSuite() {
         baseTest = new BaseTest();
+        if (System.getProperty("SAUCE_BUILD_NAME") == null) {
+            String buildName = "Automation Build" +
+                    LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
+            System.setProperty("SAUCELABS_BUILD_NAME", buildName);
+            System.out.println("=== SauceLabs Build Created: " + buildName + " ===");
+        }
+
         if (Boolean.parseBoolean(TEST_RAIL_FLAG.toString())) {
             if (resultUpdater == null) {
                 resultUpdater = new TestRailResultUpdater();
@@ -48,17 +57,20 @@ public class Hooks {
         }
     }
 
+
     // -------------------- BEFORE SCENARIO --------------------
     @Before(order = 1)
     public void beforeScenario(Scenario scenario) throws IOException {
         if (baseTest == null) baseTest = new BaseTest();
 
         if (DriverManager.getDriver() == null) {
+
+            // Include example values for Scenario Outline iterations
+            if (scenario.getSourceTagNames() != null && !scenario.getSourceTagNames().isEmpty()) {
+            }
             WebDriver driver = baseTest.setup();  // initializes WebDriver from BaseTest
             DriverManager.setDriver(driver);
         }
-
-        System.out.println("=== Before Scenario: " + scenario.getName() + " ===");
     }
 
     // -------------------- AFTER SCENARIO --------------------
@@ -67,10 +79,19 @@ public class Hooks {
         WebDriver driver = DriverManager.getDriver();
         String screenshotPath = null;
 
+
+
         try {
             // Capture screenshot if scenario failed
-            if (scenario.isFailed() && driver != null) {
+            if (driver != null) {
                 screenshotPath = captureScreenshot(scenario, driver);
+
+                // Update Sauce Labs job status if running on Sauce
+                if ("yes".equalsIgnoreCase(SAUCELABS_ENABLED.toString()) && driver instanceof JavascriptExecutor) {
+                    String result = scenario.isFailed() ? "failed" : "passed";
+                    ((JavascriptExecutor) driver).executeScript("sauce:job-result=" + result);
+                    System.out.println("=== Sauce Labs job marked as " + result + " ===");
+                }
             }
 
             // Update TestRail
