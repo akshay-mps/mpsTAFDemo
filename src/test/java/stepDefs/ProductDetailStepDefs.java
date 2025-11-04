@@ -5,6 +5,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
@@ -157,15 +158,14 @@ public class ProductDetailStepDefs {
 
     @When("^I click on View Related Products button$")
     public void i_click_on_View_Related_Products_button() {
+        operationalUtil.waitElementVisibility(5, VIEW_RELATED_PRODUCTS_BUTTON);
         VIEW_RELATED_PRODUCTS_BUTTON.click();
-        operationalUtil.waitElementVisibility(5, RELATED_PRODUCTS_SECTION.get(0));
     }
 
     @Then("^I should see the Related Products Section$")
     public void i_should_see_the_Related_Products_Section() {
-        assertTrue(RELATED_PRODUCTS_SECTION.size()>0);
-        assertTrue(RELATED_PRODUCTS_SECTION.get(0).isDisplayed());
-        operationalUtil.waitElementClickability(5, RELATED_PRODUCTS_SECTION.get(0));
+        operationalUtil.waitElementVisibility(5, RELATED_PRODUCTS_SECTION);
+        assertTrue(RELATED_PRODUCTS_SECTION.isDisplayed());
     }
 
     @When("^I click on the Contact Us button$")
@@ -194,6 +194,16 @@ public class ProductDetailStepDefs {
     public void i_see_the_main_content() {
         operationalUtil.waitElementVisibility(20, MAIN_CONTENT_PDP);
         assertTrue(MAIN_CONTENT_PDP.isDisplayed());
+    }
+
+    @When("I verify Related Products tab doesnt exist")
+    public void i_verify_related_products_tab_doesnt_exist() {
+        operationalUtil.assertElementNotPresent(RELATED_PRODUCTS_TAB, 5);
+    }
+
+    @Then("I verify Related Products section doesnt exist")
+    public void i_verify_related_products_section_doesnt_exist() {
+        operationalUtil.assertElementNotPresent(PRODUCT_RELATED_PRODUCTS_TITLE_PDP, 5);
     }
 
     @Then("^I should see the breadcrumbs$")
@@ -299,7 +309,7 @@ public class ProductDetailStepDefs {
 
     @When("^I click in Overview tab$")
     public void i_click_in_overview_tab() {
-        //productDetailS.moveToElementByActions(INTRO_TAB);
+        operationalUtil.moveToElementByActions(INTRO_TAB);
         OVERVIEW_TAB.click();
     }
 
@@ -314,9 +324,22 @@ public class ProductDetailStepDefs {
         }
     }
 
+    @Then ("I should see the Related Products Tab")
+    public void i_see_Related_Products_tab () {
+        operationalUtil.waitElementVisibility(5, HEADER_MENU2_PDP);
+        assertTrue(HEADER_MENU2_PDP.isDisplayed());
+    }
     @When("^I click in Related Products tab$")
     public void i_click_in_Related_Products_tab() {
-        RELATED_PRODUCTS_TAB.click();
+        operationalUtil.waitElementVisibility(5, HEADER_MENU2_PDP );
+        operationalUtil.moveToElementByActions(HEADER_MENU2_PDP);
+        HEADER_MENU2_PDP.click();
+    }
+
+    @Then("I check the disabled product sku {} is not in related product")
+    public void i_check_disabled_product_is_not_in_related_product_section(String prod) {
+        operationalUtil.waitElementVisibility(5, RELATED_PRODUCTS_SECTION);
+        assertTrue(!RELATED_PRODUCT_SECTION_PRODUCT.getAttribute("href").contains(prod.toLowerCase()));
     }
 
     @Then("^I should go to the Related Products part in the same page$")

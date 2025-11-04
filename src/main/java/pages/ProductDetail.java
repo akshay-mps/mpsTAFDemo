@@ -56,8 +56,10 @@ public class ProductDetail extends BaseTest {
     public static WebElement TALK_TO_ENGINEER_LABEL_INFO_PRODUCT;
     @FindBy(xpath = "//*[@class='footer_block_Contact']")
     public static WebElement CONTACT_US_BUTTON;
-    @FindBy(className = "eve")
-    public static List<WebElement> RELATED_PRODUCTS_SECTION;
+    @FindBy(id = "evaluationscrolling")
+    public static WebElement RELATED_PRODUCTS_SECTION;
+    @FindBy( xpath = "//*[@id='evaluationscrolling']/div/a")
+    public static WebElement RELATED_PRODUCT_SECTION_PRODUCT;
     @FindBy(id = "maincontent")
     public static WebElement MAIN_CONTENT_PDP;
     @FindBy(className = "breadcrumbs")
@@ -98,8 +100,10 @@ public class ProductDetail extends BaseTest {
     public static WebElement PRODUCT_DESCRIPTION_TITLE_PDP_KIT;
     @FindBy(xpath = "//div[@class='features']//h3")
     public static WebElement PRODUCT_FEATURES_BENEFITS_TITLE_PDP;
+
     @FindBy(xpath = "//div[@class='lf_se']//h3")
     public static WebElement PRODUCT_FEATURES_TITLE_PDP;
+
     @FindBy(xpath = "//div[@class='rt_se']//h3")
     public static WebElement PRODUCT_PARAMETRICS_TITLE_PDP;
     @FindBy(xpath = "//div[@class='features-wrapper']//div[@class='features']//div//ul")
